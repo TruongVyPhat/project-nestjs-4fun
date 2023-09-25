@@ -1,0 +1,14 @@
+{
+    "[json]": {
+    
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "gitlens.codeLens.scopes": [
+            "document"
+        ]
+    },
+    "workbench.colorTheme": "One Dark Pro Flat",
+    "workbench.preferredDarkColorTheme": "Default Dark+"
+}
