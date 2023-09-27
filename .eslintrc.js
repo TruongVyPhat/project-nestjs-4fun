@@ -21,7 +21,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     'indent' : ['error', 'tab'],
-    'prettier/prettier': ['error', {}, {
+    'prettier/prettier': ['error', { 'endOfLine': 'auto'}, {
       'usePrettierrc': true
     }]
   },
