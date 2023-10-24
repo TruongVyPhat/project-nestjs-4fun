@@ -13,6 +13,9 @@ import {
 	ClassSerializerInterceptor,
 	UseInterceptors,
 	SerializeOptions,
+	Param,
+	ParseIntPipe,
+	HttpException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -30,6 +33,7 @@ import { UserInDto, UserOutDto } from './dto';
 import { GROUPS } from './dto/user.dto';
 import { plainToClass } from 'class-transformer';
 import { GetOptions } from 'src/dto/request/GetOptions';
+import { NOT_FOUND } from 'src/pulbic/constant/messages';
 
 // @ApiBearerAuth()
 @ApiTags('user')
@@ -39,11 +43,16 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get()
-	@ApiOkResponse({ type: UserOutDto, isArray: true })
+	@ApiQuery({ name: 'email', type: String, required: false })
 	// @SerializeOptions({ groups: [GROUPS.PRIVATE] })
-	async getAllUsers(@Query() req: GetOptions): Promise<UserOutDto[]> {
+	async getAllUsers(
+		@Query() options?: GetOptions,
+		@Query('email') email?: string,
+	): Promise<UserOutDto[]> {
 		try {
-			const users = await this.userService.getUsers(req);
+			const users = await this.userService.getUsers(email, options);
+			if (!users || users.length <= 0)
+				throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
 			return plainToClass(UserOutDto, users);
 		} catch (error: any) {
 			throw error;
@@ -65,18 +74,22 @@ export class UserController {
 
 	@Get(':id')
 	@ApiParam({ name: 'id', type: Number })
-	@ApiBody({ type: UserInDto })
-	@ApiQuery({
-		enumName: 'role',
-		name: 'role',
-		enum: UserRole,
-		isArray: false,
-	})
-	@ApiCreatedResponse({ type: UserInDto, description: 'shit is created' })
-	@ApiOkResponse({ type: String, description: 'shit is oke to' })
-	async findByReq(@Req() req: Request, @Res() res: Response) {
-		res.status(200).json('ccc');
-		// return req.body
-		// return this.userService.get_user_by_fk(params)
+	// @ApiBody({ type: UserInDto, required: false })
+	// @ApiQuery({
+	// 	enumName: 'role',
+	// 	name: 'role',
+	// 	enum: UserRole,
+	// 	isArray: false,
+	// })
+	@ApiQuery({ name: 'email', type: String, required: false })
+	async findByReq(
+		@Param('id', ParseIntPipe) id: number,
+	): Promise<UserOutDto> {
+		const user = await this.userService.getUserById(id);
+		if (user) {
+			return plainToClass(UserOutDto, user);
+		} else {
+			throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
+		}
 	}
 }

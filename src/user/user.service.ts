@@ -1,27 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
 import { GetOptions } from 'src/dto/request/GetOptions';
+import { CREATION_FAILED } from 'src/pulbic/constant/messages';
 
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService) {}
 
-	public async getUserById(
-		userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-	): Promise<User | null> {
+	public async getUserById(id: number): Promise<User | null> {
 		return this.prisma.user.findUnique({
-			where: userWhereUniqueInput,
+			where: { id },
 		});
 	}
 
-	public async getUsers(params: GetOptions): Promise<User[]> {
-		console.log(params);
-		return this.prisma.user.findMany(params);
+	public async getUsers(
+		email?: string,
+		options?: GetOptions,
+	): Promise<User[]> {
+		return this.prisma.user.findMany({ where: { email }, ...options });
 	}
 
 	public async createUser(data: Prisma.UserCreateInput): Promise<User> {
-		return this.prisma.user.create({ data });
+		try {
+			return this.prisma.user.create({ data });
+		} catch (e) {
+			throw new HttpException(
+				CREATION_FAILED,
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
 	}
 
 	public async updateUser(params: {
