@@ -8,8 +8,6 @@ import {
 	Req,
 	Res,
 	HttpStatus,
-	UsePipes,
-	ValidationPipe,
 	ClassSerializerInterceptor,
 	UseInterceptors,
 	SerializeOptions,
@@ -22,13 +20,11 @@ import { Request, Response } from 'express';
 import {
 	ApiBody,
 	ApiCreatedResponse,
-	ApiOkResponse,
 	ApiParam,
 	ApiQuery,
 	ApiTags,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { UserRole } from '@prisma/client';
 import { UserInDto, UserOutDto } from './dto';
 import { GROUPS } from './dto/user.dto';
 import { plainToClass } from 'class-transformer';
@@ -44,7 +40,7 @@ export class UserController {
 
 	@Get()
 	@ApiQuery({ name: 'email', type: String, required: false })
-	// @SerializeOptions({ groups: [GROUPS.PRIVATE] })
+	@SerializeOptions({ groups: [GROUPS.PRIVATE] })
 	async getAllUsers(
 		@Query() options?: GetOptions,
 		@Query('email') email?: string,
@@ -53,7 +49,10 @@ export class UserController {
 			const users = await this.userService.getUsers(email, options);
 			if (!users || users.length <= 0)
 				throw new HttpException(NOT_FOUND, HttpStatus.NOT_FOUND);
-			return plainToClass(UserOutDto, users);
+			return plainToClass(UserOutDto, users, {
+				// this option must be required and eq with @SerializeOptions for prisma model but not need with TypeORM model
+				groups: [GROUPS.PRIVATE],
+			});
 		} catch (error: any) {
 			throw error;
 		}
