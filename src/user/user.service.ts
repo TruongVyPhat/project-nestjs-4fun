@@ -18,7 +18,10 @@ export class UserService {
 		email?: string,
 		options?: GetOptions,
 	): Promise<User[]> {
-		return this.prisma.user.findMany({ where: { email }, ...options });
+		return this.prisma.user.findMany({
+			where: { email: { contains: email } },
+			...options,
+		});
 	}
 
 	public async createUser(data: Prisma.UserCreateInput): Promise<User> {
