@@ -58,19 +58,6 @@ export class UserController {
 		}
 	}
 
-	@Post()
-	@ApiBody({ type: UserInDto })
-	@ApiCreatedResponse({ type: UserOutDto, description: 'shit is created' })
-	async createUser(@Req() req: Request, @Res() res: Response) {
-		try {
-			const user = await this.userService.createUser(req.body);
-			console.log(user);
-			res.status(HttpStatus.CREATED).json(plainToClass(UserOutDto, user));
-		} catch (error) {
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(error.toString());
-		}
-	}
-
 	@Get(':id')
 	@ApiParam({ name: 'id', type: Number })
 	// @ApiBody({ type: UserInDto, required: false })

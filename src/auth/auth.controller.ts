@@ -1,4 +1,6 @@
 import {
+	BadRequestException,
+	Body,
 	Controller,
 	Get,
 	HttpException,
@@ -6,56 +8,61 @@ import {
 	Param,
 	Post,
 	Req,
+	UnauthorizedException,
 	UseGuards,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { AuthService } from './auth.service';
 import { User } from '@prisma/client';
 import { LocalAuthGuard } from './guards/local.guard';
 import { AuthenticationGuard } from './guards/auth.guard';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { RegisterUserDto } from 'src/user/dto/register.user.dto';
+import { LoginUserDto, UserOutDto } from 'src/user/dto';
+import { AuthService } from './auth.service';
+import { plainToClass } from 'class-transformer';
+import { AuthResponse } from './interfaces/auth-response.interface';
 // import { CreateUserDto } from './dto/CreateUser.dto';
 
-@Controller()
+@ApiTags('auth')
+@Controller('auth')
 export class AuthController {
 	constructor(
 		private userService: UserService,
 		private authService: AuthService,
 	) {}
 
-	//fucntion register user
-	// @Post('/register')
-	// async registerUser(@Body() input: CreateUserDto) {
-	// 	const check = await this.validate(input.email);
-	// 	if (!check) {
-	// 		throw new HttpException(
-	// 			{ message: 'User already exists' },
-	// 			HttpStatus.BAD_REQUEST,
-	// 		);
-	// 	}
-
-	// 	input.password = await this.authService.hashPassword(input.password);
-	// 	return this.userService.create(input);
-	// }
-
-	//handle login
-	@UseGuards(LocalAuthGuard)
-	@Post('/login')
-	async login(@Req() request): Promise<any> {
-		return this.authService.login(request.user);
+	// fucntion register user
+	@Post('/register')
+	async registerUser(@Body() input: RegisterUserDto): Promise<UserOutDto> {
+		const check = await this.validateEmail(input.email);
+		if (!check) {
+			throw new BadRequestException('Email already exists');
+		}
+		const user = this.authService.createUser(input);
+		if (!user) {
+			throw new HttpException(
+				'Registration Fail',
+				HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+		return plainToClass(UserOutDto, user);
 	}
 
-	@UseGuards(AuthenticationGuard)
-	@Get('users/:id')
-	async getUserById(@Param() params): Promise<User> {
-		const user = await this.userService.getUserById(params.id);
-		return user;
+	//handle login
+	//@UseGuards(LocalAuthGuard)
+	@Post('/login')
+	async login(@Body() request: LoginUserDto): Promise<AuthResponse> {
+		const user = await this.authService.authentication(request);
+		if (!user) {
+			throw new UnauthorizedException();
+		}
+		return this.authService.generateJwtToken(user as User);
 	}
 
 	//check user exists by email
-	async validate(email: string) {
+	private async validateEmail(email: string) {
 		try {
-			const users = await this.userService.getUsers(email);
-			return users.length <= 0;
+			return !(await this.userService.getUserByEmail(email));
 		} catch (e) {
 			return false;
 		}

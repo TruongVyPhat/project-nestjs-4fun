@@ -1,8 +1,13 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+	BadRequestException,
+	HttpException,
+	HttpStatus,
+	Injectable,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
 import { GetOptions } from 'src/dto/request/GetOptions';
-import { CREATION_FAILED } from 'src/pulbic/constant/messages';
+import { CREATION_FAILED, NOT_FOUND } from 'src/pulbic/constant/messages';
 
 @Injectable()
 export class UserService {
@@ -15,13 +20,23 @@ export class UserService {
 	}
 
 	public async getUsers(
-		email?: string,
+		name?: string,
 		options?: GetOptions,
 	): Promise<User[]> {
 		return this.prisma.user.findMany({
-			where: { email: { contains: email } },
+			where: { name: { contains: name } },
 			...options,
 		});
+	}
+
+	public async getUserByEmail(email: string): Promise<User | null> {
+		const user = await this.prisma.user.findUnique({
+			where: { email: email },
+		});
+		if (!user) {
+			throw new BadRequestException(NOT_FOUND);
+		}
+		return user;
 	}
 
 	public async createUser(data: Prisma.UserCreateInput): Promise<User> {

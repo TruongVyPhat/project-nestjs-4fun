@@ -23,11 +23,6 @@ export class UserInDto {
 
 	@ApiProperty()
 	@IsNotEmpty()
-	@IsString()
-	uuid: string;
-
-	@ApiProperty()
-	@IsNotEmpty()
 	role: UserRole;
 }
 
@@ -37,10 +32,10 @@ export class UserOutDto implements User {
 	email: string;
 
 	@Expose({ groups: [GROUPS.PRIVATE] })
-	uuid: string;
-
-	@Expose({ groups: [GROUPS.PRIVATE] })
 	role: UserRole;
+
+	@Exclude()
+	password: string;
 
 	@Exclude()
 	createdAt: Date;

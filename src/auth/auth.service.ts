@@ -4,6 +4,9 @@ import { AuthPayload } from './interfaces/auth-payload.interface';
 import * as moment from 'moment';
 import { UserService } from 'src/user/user.service';
 import { User } from '@prisma/client';
+import { LoginUserDto } from 'src/user/dto';
+import { RegisterUserDto } from 'src/user/dto/register.user.dto';
+import { AuthResponse } from './interfaces/auth-response.interface';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const bcrypt = require('bcrypt');
 
@@ -21,18 +24,17 @@ export class AuthService {
 	async comparePassword(
 		password: string,
 		storePasswordHash: string,
-	): Promise<any> {
+	): Promise<boolean> {
 		return await bcrypt.compare(password, storePasswordHash);
 	}
 
-	async authentication(email: string, password: string): Promise<any> {
-		const user = await this.userService.getUsers(email)[0][0];
-		const check = await this.comparePassword(password, user.password);
+	async authentication(login: LoginUserDto): Promise<User | boolean> {
+		const user = await this.userService.getUserByEmail(login.email);
+		const check = await this.comparePassword(login.password, user.password);
 
-		if (!user || !check) {
+		if (!check) {
 			return false;
 		}
-
 		return user;
 	}
 
@@ -40,18 +42,18 @@ export class AuthService {
 		return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
 	}
 
-	async login(user: User) {
-		const payload: AuthPayload = {
-			name: user.name,
-			email: user.email,
-			id: user.id,
-		};
+	async generateJwtToken(user: User): Promise<AuthResponse> {
+		const payload: AuthPayload = { ...user };
 		const expiresTime = 100;
-
-		return {
+		const auth: AuthResponse = {
 			expiresIn: moment().add(expiresTime, 'days'),
 			token: this.jwtService.sign(payload),
-			user,
 		};
+		return auth;
+	}
+
+	async createUser(input: RegisterUserDto): Promise<User> {
+		input.password = await this.hashPassword(input.password);
+		return this.userService.createUser(input);
 	}
 }
