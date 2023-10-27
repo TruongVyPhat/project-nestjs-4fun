@@ -1,7 +1,7 @@
 import { User, UserRole } from '.prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
-import { classToPlain, Exclude, Expose, Transform } from 'class-transformer';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { Exclude, Expose } from 'class-transformer';
 
 export enum GROUPS {
 	PRIVATE = 'PRIVATE',
@@ -23,24 +23,19 @@ export class UserInDto {
 
 	@ApiProperty()
 	@IsNotEmpty()
-	@IsString()
-	uuid: string;
-
-	@ApiProperty()
-	@IsNotEmpty()
 	role: UserRole;
 }
 
-export class UserOutDto {
+export class UserOutDto implements User {
 	id: number;
 	name: string;
 	email: string;
 
-	// @Expose({ groups: [GROUPS.PRIVATE] })
-	uuid: string;
-
 	@Expose({ groups: [GROUPS.PRIVATE] })
 	role: UserRole;
+
+	@Exclude()
+	password: string;
 
 	@Exclude()
 	createdAt: Date;
