@@ -2,11 +2,8 @@
 /* eslint-disable prettier/prettier */
 import {
 	Get,
-	Post,
 	Controller,
 	Query,
-	Req,
-	Res,
 	HttpStatus,
 	ClassSerializerInterceptor,
 	UseInterceptors,
@@ -14,26 +11,21 @@ import {
 	Param,
 	ParseIntPipe,
 	HttpException,
+	UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
 
-import {
-	ApiBody,
-	ApiCreatedResponse,
-	ApiParam,
-	ApiQuery,
-	ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { UserInDto, UserOutDto } from './dto';
+import { UserOutDto } from './dto';
 import { GROUPS } from './dto/user.dto';
 import { plainToClass } from 'class-transformer';
 import { GetOptions } from 'src/dto/request/GetOptions';
 import { NOT_FOUND } from 'src/pulbic/constant/messages';
+import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 
-// @ApiBearerAuth()
 @ApiTags('user')
 @Controller('users')
+@ApiBearerAuth() // this decorator use for adding token into api header in swagger
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
 	constructor(private readonly userService: UserService) {}
@@ -41,6 +33,8 @@ export class UserController {
 	@Get()
 	@ApiQuery({ name: 'email', type: String, required: false })
 	@SerializeOptions({ groups: [GROUPS.PRIVATE] })
+	@UseGuards(AuthenticationGuard)
+	// @ApiBearerAuth()
 	async getAllUsers(
 		@Query() options?: GetOptions,
 		@Query('email') email?: string,

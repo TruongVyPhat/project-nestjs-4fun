@@ -19,7 +19,9 @@ async function bootstrap() {
 
 	const options = new DocumentBuilder()
 		.setTitle('Fucking RealShit NestJS App of Fatnef')
-		.setDescription("Hello mother fcker. I'm back")
+		.setDescription(
+			'Token nè: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJwaGF0dHZAZ21haWwuY29tIiwicGFzc3dvcmQiOiIkMmIkMTIkUmRjeXdBY01jZHQ3VWRsS2ZMTUs3LkNubUwvY3FjaU5jd2JGTGFIOHlJeGkycUtmNzZjSnkiLCJuYW1lIjoicGhhdHR2Iiwicm9sZSI6IlVTRVIiLCJjcmVhdGVkQXQiOiIyMDIzLTEwLTI2VDA3OjE5OjMwLjA1M1oiLCJ1cGRhdGVkQXQiOiIyMDIzLTEwLTI2VDA3OjE5OjMwLjA1OFoiLCJpYXQiOjE2OTgzODg1MzgsImV4cCI6MTY5ODM5MjEzOH0.QCnOsYdkmIdUZeWu6CF_Rnl4A3BlwwL4nhlBUQaxj5o',
+		)
 		.setVersion('1.0')
 		.setBasePath('api')
 		.addBearerAuth()
