@@ -5,13 +5,14 @@ import {
 	HttpStatus,
 	ClassSerializerInterceptor,
 	UseInterceptors,
+	SerializeOptions,
 	Param,
 	ParseIntPipe,
 	HttpException,
 	UseGuards,
 } from '@nestjs/common';
 
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserOutDto } from './dto';
 import { GROUPS } from './dto/user.dto';
@@ -22,6 +23,7 @@ import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 
 @ApiTags('user')
 @Controller('users')
+@ApiBearerAuth() // this decorator use for adding token into api header in swagger
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
 	constructor(private readonly userService: UserService) {}

@@ -13,7 +13,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 	imports: [PrismaModule],
 	providers: [UserService, PrismaModule],
 	controllers: [UserController],
-	exports: [],
+	exports: [UserService],
 })
 export class UserModule implements NestModule {
 	public configure(consumer: MiddlewareConsumer) {
